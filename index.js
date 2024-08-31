@@ -30,14 +30,14 @@ async function run() {
     const assignment11db = client.db('assignment11db').collection('queryproduct');
     const assignment11db_users = client.db('assignment11db').collection('users');
 
-    app.get('/users', async(req, res)=>{
-      const cursor = assignment11db_users.find() ;
-      const result =await cursor.toArray(cursor);
-      res.send(result);
+    app.get('/users', async (req, res) => {
+      const cursor = assignment11db_users.find();
+      const result =await cursor.toArray();
+      res.send(result)
     })
-    app.post('/users', async(req,res)=>{
+    app.post('/users', async (req, res) => {
       const newUser = req.body;
-      const result =await assignment11db_users.insertOne(newUser);
+      const result = await assignment11db_users.insertOne(newUser);
       res.send(result);
     })
     // Send a ping to confirm a successful connection
@@ -51,10 +51,10 @@ async function run() {
 run().catch(console.dir);
 
 
-app.get('/', (req, res)=>{
-    res.send('server11 is running...')
+app.get('/', (req, res) => {
+  res.send('server11 is running...')
 });
 
-app.listen(port, ()=>{
-    console.log(`server port number is on ${port}`);
+app.listen(port, () => {
+  console.log(`server port number is on ${port}`);
 })
