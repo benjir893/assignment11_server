@@ -29,6 +29,7 @@ async function run() {
 
     const assignment11db = client.db('assignment11db').collection('queryproduct');
     const assignment11db_users = client.db('assignment11db').collection('users');
+    const assignment11db_recomendation = client.db('assignment11db').collection('recomendation');
 
     app.get('/users', async (req, res) => {
       const cursor = assignment11db_users.find();
