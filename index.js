@@ -51,7 +51,7 @@ async function run() {
     app.get('/recomendation', async(req, res)=>{
       const cursor = assignment11db_recomendation.find();
       const result =await cursor.toArray();
-    
+      res.send(result)
     })
 
     //delete api's
