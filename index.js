@@ -31,6 +31,7 @@ async function run() {
     const assignment11db_users = client.db('assignment11db').collection('users');
     const assignment11db_recomendation = client.db('assignment11db').collection('recomendation');
 
+    // get api's
     app.get('/users', async (req, res) => {
       const cursor = assignment11db_users.find();
       const result = await cursor.toArray();
@@ -47,6 +48,13 @@ async function run() {
       const result = await assignment11db.findOne(query);
       res.send(result);
     })
+    app.get('/recomendation', async(req, res)=>{
+      const cursor = assignment11db_recomendation.find();
+      const result =await cursor.toArray();
+    
+    })
+
+    //delete api's
     app.delete('/queryproduct/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
