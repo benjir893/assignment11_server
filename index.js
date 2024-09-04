@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 5000;
@@ -32,8 +32,51 @@ async function run() {
 
     app.get('/users', async (req, res) => {
       const cursor = assignment11db_users.find();
-      const result =await cursor.toArray();
+      const result = await cursor.toArray();
       res.send(result)
+    })
+    app.get('/queryproduct', async (req, res) => {
+      const cursor = assignment11db.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    })
+    app.get('/queryproduct/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await assignment11db.findOne(query);
+      res.send(result);
+    })
+    app.delete('/queryproduct/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await assignment11db.deleteOne(query);
+      res.send(result);
+    })
+    app.put('/queryproduct/:id', async(req, res) => {
+      const id = req.params.id;
+      const updatedQuery = req.body;
+      const query = { _id: new ObjectId(id) };
+      const options = { upsert: true }
+      const prod = {
+        $set: {
+          ProductImage: updatedQuery.ProductImage,
+          QueryTitle: updatedQuery.QueryTitle,
+          ProductName: updatedQuery.ProductName,
+          BrandName: updatedQuery.BrandName,
+          AlternationReason: updatedQuery.AlternationReason,
+          DatePosted: updatedQuery.DatePosted,
+          // name: updatedQuery.name,
+          // image: updatedQuery.image,
+          // email: updatedQuery.email,
+        }
+      }
+      const result =await assignment11db.updateOne(query, prod, options);
+      res.send(result);
+    })
+    app.post('/queryproduct', async (req, res) => {
+      const newQuery = req.body;
+      const result = await assignment11db.insertOne(newQuery);
+      res.send(result);
     })
     app.post('/users', async (req, res) => {
       const newUser = req.body;
