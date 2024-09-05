@@ -53,7 +53,12 @@ async function run() {
       const result =await cursor.toArray();
       res.send(result)
     })
-
+    app.get('/recomendation/:id', async(req, res)=>{
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result =await assignment11db_recomendation.findOne(query);
+      res.send(result);
+    })
     //delete api's
     app.delete('/queryproduct/:id', async (req, res) => {
       const id = req.params.id;
