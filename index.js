@@ -87,6 +87,12 @@ async function run() {
       const result =await assignment11db.updateOne(query, prod, options);
       res.send(result);
     })
+    //post api's
+    app.post('/recomendation', async(req, res)=>{
+      const newquery = req.body;
+      const result = assignment11db_recomendation.insertOne(newquery);
+      res.send(result)
+    })
     app.post('/queryproduct', async (req, res) => {
       const newQuery = req.body;
       const result = await assignment11db.insertOne(newQuery);
