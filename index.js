@@ -66,6 +66,12 @@ async function run() {
       const result = await assignment11db.deleteOne(query);
       res.send(result);
     })
+    app.delete('/recomendation/:id', async(req,res)=>{
+      const id = req.params.id;
+      const query ={id: new ObjectId(id)};
+      const result =await assignment11db_recomendation.deleteOne(query);
+      res.send(result)
+    })
     app.put('/queryproduct/:id', async(req, res) => {
       const id = req.params.id;
       const updatedQuery = req.body;
