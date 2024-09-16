@@ -1,14 +1,19 @@
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
+const cookeiparser = require('cookie-parser')
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 5000;
 
 // MIDDLEWARE
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:5173', 'assignment11-2cec1.web.app', 'assignment11-2cec1.firebaseapp.com'],
+  credentials: true
+}));
 app.use(express.json());
+app.use(cookeiparser());
 
 
 
@@ -23,6 +28,28 @@ const client = new MongoClient(uri, {
   }
 });
 
+//middleware
+// const logger = async (req, res, next) => {
+//   console.log('called:', req.hostname, req.originalUrl);
+//   next();
+// }
+// const verifyToken = async (req, res, next) => {
+//   const token = req.cookies?.token;
+//   // console.log('token value in middleware: ', token)
+//   if (!token) {
+//     return res.status(401).send({ message: 'not authorized' })
+//   }
+//   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+//     if (err) {
+//       return res.status(401).send({ message: 'not authorized' })
+//     }
+//     console.log('value of token in middleware: ', decoded)
+//     req.user = decoded;
+//     next()
+//   })
+
+// }
+
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
@@ -34,12 +61,18 @@ async function run() {
     const assignment11db_blog = client.db('assignment11db').collection('blogs');
 
 
-// auth api's
-    app.post('/jwt', async(req, res)=>{
+    // auth api's
+    app.post('/jwt', async (req, res) => {
       const user = req.body;
-      // console.log(user);
-      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '2h'})
-      res.send(token);
+      console.log(user);
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
+      res
+        .cookie('token', token, {
+          httpOnly: true,
+          secure: true,  //for the production value should be true.
+          sameSite: 'none'
+        })
+        .send({ success: true });
     })
 
     // get api's
@@ -48,11 +81,23 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result)
     })
-    app.get('/queryproduct', async (req, res) => {
-      const cursor = assignment11db.find();
-      const result = await cursor.toArray();
-      res.send(result);
+    // app.get('/queryproduct',logger, async (req, res) => {
+    //   const cursor = assignment11db.find();
+    //   const result = await cursor.toArray();
+    //   res.send(result);
+    // })
+
+    app.get('/queryproduct', async(req, res)=>{
+      console.log(req.query.email)
+      console.log('cookei from client: ',req.cookies.token)
+      let query = {};
+      if(req.query?.email){
+        query = {email: req.query.email}
+      }
+      const result =await assignment11db.find(query).toArray();
+      res.send(result)
     })
+
     app.get('/queryproduct/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -60,7 +105,13 @@ async function run() {
       res.send(result);
     })
     app.get('/recomendation', async (req, res) => {
-      const cursor = assignment11db_recomendation.find();
+      console.log(req.query.email)
+      console.log('recomendation client cookies: ',req.cookies.token)
+      let query ={};
+      if(req.query?.email){
+        query = {email: req.query.email}
+      }
+      const cursor = assignment11db_recomendation.find(query);
       const result = await cursor.toArray();
       res.send(result)
     })
@@ -82,7 +133,7 @@ async function run() {
       const result = await assignment11db.deleteOne(query);
       res.send(result);
     })
-    app.delete('/recomendation/:id', async(req, res) => {
+    app.delete('/recomendation/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await assignment11db_recomendation.deleteOne(query);
@@ -127,7 +178,7 @@ async function run() {
     })
     app.post('/blogs', async (req, res) => {
       const newblog = req.body;
-      const result =await assignment11db_blog.insertOne(newblog);
+      const result = await assignment11db_blog.insertOne(newblog);
       res.send(result)
     })
     // Send a ping to confirm a successful connection
