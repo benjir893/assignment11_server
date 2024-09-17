@@ -9,7 +9,9 @@ const port = process.env.PORT || 5000;
 
 // MIDDLEWARE
 app.use(cors({
-  origin: ['http://localhost:5173', 'assignment11-2cec1.web.app', 'assignment11-2cec1.firebaseapp.com'],
+  origin: ["http://localhost:5173",
+    "https://assignment11-2cec1.web.app",
+    "https://assignment11-2cec1.firebaseapp.com"],
   credentials: true
 }));
 app.use(express.json());
@@ -50,10 +52,15 @@ const client = new MongoClient(uri, {
 
 // }
 
+const cookieOption = {
+  httpOnly: true,
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+  secure: process.env.NODE_ENV === "production" ? true : false,  //for the production value should be true.
+}
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     const assignment11db = client.db('assignment11db').collection('queryproduct');
     const assignment11db_users = client.db('assignment11db').collection('users');
@@ -67,13 +74,15 @@ async function run() {
       console.log(user);
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
       res
-        .cookie('token', token, {
-          httpOnly: true,
-          secure: true,  //for the production value should be true.
-          sameSite: 'none'
-        })
+        .cookie('token', token, cookieOption)
         .send({ success: true });
     })
+
+    app.post('/logout', async (req, res) => {
+      const user = req.body;
+      console.log('logged out: ', user);
+      res.clearCookie('token', {...cookieOption, maxAge: 0 }).send({ success: true })
+  })
 
     // get api's
     app.get('/users', async (req, res) => {
@@ -87,14 +96,14 @@ async function run() {
     //   res.send(result);
     // })
 
-    app.get('/queryproduct', async(req, res)=>{
+    app.get('/queryproduct', async (req, res) => {
       console.log(req.query.email)
-      console.log('cookei from client: ',req.cookies.token)
+      console.log('cookei from client: ', req.cookies.token)
       let query = {};
-      if(req.query?.email){
-        query = {email: req.query.email}
+      if (req.query?.email) {
+        query = { email: req.query.email }
       }
-      const result =await assignment11db.find(query).toArray();
+      const result = await assignment11db.find(query).toArray();
       res.send(result)
     })
 
@@ -106,10 +115,10 @@ async function run() {
     })
     app.get('/recomendation', async (req, res) => {
       console.log(req.query.email)
-      console.log('recomendation client cookies: ',req.cookies.token)
-      let query ={};
-      if(req.query?.email){
-        query = {email: req.query.email}
+      console.log('recomendation client cookies: ', req.cookies.token)
+      let query = {};
+      if (req.query?.email) {
+        query = { email: req.query.email }
       }
       const cursor = assignment11db_recomendation.find(query);
       const result = await cursor.toArray();
@@ -182,7 +191,7 @@ async function run() {
       res.send(result)
     })
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
